@@ -5,6 +5,7 @@ const app = express();
 const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
+const path = require('path');
 
 const rooms = {};
 
@@ -41,7 +42,7 @@ if (process.env.NODE_ENV === 'production') {
 
     // Handle React routing, return all requests to React app
     app.get('*', function(req, res) {
-        res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+        res.sendFile(path.join(__dirname, './client/build', 'index.html'));
     });
 }
 
