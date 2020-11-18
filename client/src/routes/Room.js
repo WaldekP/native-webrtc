@@ -8,6 +8,7 @@ const Room = (props) => {
     const socketRef = useRef();
     const otherUser = useRef();
     const userStream = useRef();
+    const senders = useRef([]);
 
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(stream => {
@@ -37,7 +38,7 @@ const Room = (props) => {
 
     function callUser(userID) {
         peerRef.current = createPeer(userID);
-        userStream.current.getTracks().forEach(track => peerRef.current.addTrack(track, userStream.current));
+        userStream.current.getTracks().forEach(track => senders.current.push(peerRef.current.addTrack(track, userStream.current)));
     }
 
     function createPeer(userID) {
@@ -78,7 +79,7 @@ const Room = (props) => {
         peerRef.current = createPeer();
         const desc = new RTCSessionDescription(incoming.sdp);
         peerRef.current.setRemoteDescription(desc).then(() => {
-            userStream.current.getTracks().forEach(track => peerRef.current.addTrack(track, userStream.current));
+            userStream.current.getTracks().forEach(track => senders.current.push(peerRef.current.addTrack(track, userStream.current)))
         }).then(() => {
             return peerRef.current.createAnswer();
         }).then(answer => {
@@ -119,12 +120,42 @@ const Room = (props) => {
         partnerVideo.current.srcObject = e.streams[0];
     };
 
+    function shareScreen() {
+        navigator.mediaDevices.getDisplayMedia({ cursor: true }).then(stream => {
+            const screenTrack = stream.getTracks()[0];
+            senders.current.find(sender => sender.track.kind === 'video').replaceTrack(screenTrack);
+            screenTrack.onended = function() {
+                senders.current.find(sender => sender.track.kind === "video").replaceTrack(userStream.current.getTracks()[1]);
+            }
+        })
+    }
+
+
+    function toggleVid() {
+        for (let index in userStream.current.getVideoTracks()) {
+            userStream.current.getVideoTracks()[index].enabled = !userStream.current.getVideoTracks()[index].enabled
+        }
+    }
+    function toggleMute() {
+        for (let index in userStream.current.getAudioTracks()) {
+            userStream.current.getAudioTracks()[index].enabled = !userStream.current.getAudioTracks()[index].enabled
+        }
+    }
     return (
         <div>
-            <video autoPlay ref={userVideo} />
-            <video autoPlay ref={partnerVideo} />
+            <div style={{ display: 'flex'}}>
+                <video controls style={{height: 500, width: 500}} autoPlay ref={userVideo} />
+                <video controls style={{height: 500, width: 500}} autoPlay ref={partnerVideo} />
+            </div>
+            <div style={{ display: 'flex'}}>
+                <button onClick={shareScreen}>Udostępnij ekran</button>
+                <button onClick={toggleMute}>Wycisz</button>
+                <button onClick={toggleVid}>Wyłącz ekran</button>
+            </div>
+
         </div>
     );
 };
 
 export default Room;
+
