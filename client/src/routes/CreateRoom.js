@@ -8,7 +8,10 @@ const CreateRoom = (props) => {
     }
 
     return (
-        <button onClick={create}>Create Room</button>
+        <div>
+            <h1>Zdzwonki Twój Psycholog</h1>
+            <button onClick={create}>Utwórz pokój</button>
+        </div>
     );
 }
 
