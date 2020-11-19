@@ -13,6 +13,7 @@ const Room = (props) => {
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(stream => {
             userVideo.current.srcObject = stream;
+            userVideo.current.muted = true
             userStream.current = stream;
 
             socketRef.current = io.connect("/");
@@ -118,7 +119,7 @@ const Room = (props) => {
 
     function handleTrackEvent(e) {
         partnerVideo.current.srcObject = e.streams[0];
-    };
+    }
 
     function shareScreen() {
         navigator.mediaDevices.getDisplayMedia({ cursor: true }).then(stream => {
@@ -141,6 +142,7 @@ const Room = (props) => {
             userStream.current.getAudioTracks()[index].enabled = !userStream.current.getAudioTracks()[index].enabled
         }
     }
+
     return (
         <div>
             <div style={{ display: 'flex'}}>
